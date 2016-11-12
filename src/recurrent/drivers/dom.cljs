@@ -10,51 +10,55 @@
 (def VirtualDom js/virtualDom)
 
 (defn vtree-for
-  [[tag attrs & children]]
-  (VirtualDom.h (name tag) 
-                (clj->js attrs)
-                (if (= (count children) 1)
-                  (first children)
-                  (clj->js (map vtree-for children)))))
+  [[tag attrs & children :as element]]
+  (if (and (vector? element) (keyword? tag))
+    (do 
+      (VirtualDom.h (name tag)
+                    (clj->js attrs)
+                    (clj->js (map vtree-for children))))
+    (if (vector? element)
+      (map vtree-for element)
+      element)))
 
-(defn make-dom-driver
-  [id]
+(defn from-element
+  [parent]
   (fn [vtree$]
-    (let [elem$ (e-sig/signal)
-          parent (.getElementById js/document id)]
-
+    (let [elem$ (e-sig/signal)]
       (e-sig/subscribe-next 
-        (e-sig/sliding-slice 2 (e-sig/map vtree-for vtree$))
+        (e-sig/sliding-slice 2 vtree$)
         (fn [[curr next]]
-          (when (and curr (not next))
-            (let [elem (js/virtualDom.create curr)]
-              (.appendChild parent elem)
-              (when (not (e-sig/is-completed elem$))
-                (e-sig/on-next elem$ elem))))
-          (when (and curr next) 
-            (let [patches (js/virtualDom.diff curr next)
-                  elem (js/virtualDom.patch @elem$ patches)]
-              (when (not (e-sig/is-completed elem$))
-                (e-sig/on-next elem$ elem))))))
+          (when (not= curr next)
+            (let [curr (vtree-for curr)
+                  next (vtree-for next)]
+              (when (and curr (not next))
+                (let [elem (js/virtualDom.create curr)]
+                  (.appendChild parent elem)
+                  (when (not (e-sig/is-completed elem$))
+                    (e-sig/on-next elem$ elem))))
+              (when (and curr next)
+                (let [patches (js/virtualDom.diff curr next)
+                      elem (js/virtualDom.patch @elem$ patches)]
+                  (when (not (e-sig/is-completed elem$))
+                    (e-sig/on-next elem$ elem))))))))
               
-      {:selector-fn
        (fn [selector]
          (fn [event]
-           (let [event$ (e-sig/signal)]
+           (let [event$ (e-sig/signal)
+                 elem-tap-$ (e-sig/tap elem$)]
              (e-sig/subscribe-next 
-               elem$
+               elem-tap-$
                (fn [elem]
-                 (e-sig/on-completed elem$)
+                 (e-sig/on-completed elem-tap-$)
                  (let [selection 
-                       (if (= ":root" selector) 
+                       (if (= "root" (name selector))
                          elem
                          (.querySelector elem selector))]
                    (.addEventListener selection
-                                      event
+                                      (name event)
                                       (fn [e]
                                         (e-sig/on-next event$ e))))))
-             event$)))})))
+             event$))))))
 
-
-
-
+(defn from-id
+  [id]
+  (from-element (.getElementById js/document id)))

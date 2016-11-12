@@ -30,10 +30,11 @@
 (defn replicate-many!
   [signals proxies]
   (doseq [[k signal] signals]
-    (async/pipe (async/tap 
-                  (:mult signal) 
-                  (async/chan (async/sliding-buffer 1) nil))
-                (:ch (proxies k)))
+    (when (proxies k)
+      (async/pipe (async/tap 
+                    (:mult signal) 
+                    (async/chan (async/sliding-buffer 1) nil))
+                  (:ch (proxies k))))
     (when @signal
       (e-sig/on-next (proxies k) @signal))))
 
@@ -45,12 +46,11 @@
     (replicate-many! sinks sink-proxies)
     {:sources sources :sinks sinks}))
 
-(defn test-dom
+(defn test-dom!
   []
   (run!
     (fn [sources]
-      (let [selector-fn (get-in sources [:DOM :selector-fn])
-            mouse-pos$ ((selector-fn ":root") "mousemove")
+      (let [mouse-pos$ (((:DOM sources) ":root") "mousemove")
             sinks {:DOM 
                    (->> (e-sig/map
                           (fn [e] [(.-clientX e) 
@@ -64,7 +64,7 @@
                           (str "Mouse Pos: " x)]))
                      )}]
         sinks))
-    {:DOM (dom-driver/make-dom-driver "app")}))
+    {:DOM (dom-driver/from-id "app")}))
 
 (defn test-pixi
   []

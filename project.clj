@@ -1,6 +1,6 @@
 (defproject recurrent "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "An implementation of cycle.js in clojurescript."
+  :url "https://github.com/jeremykross/recurrent"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
@@ -12,8 +12,8 @@
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [cljsjs/virtual-dom "2.1.1-0"]
-                 [cljsjs/pixi "3.0.7-0"]
-                 [rm-hull/monet "0.2.2"]]
+                 [cljsjs/pixi "3.0.10-0"]
+                 [rm-hull/monet "0.3.0"]]
   
   :plugins [[lein-figwheel "0.5.0-6"]
             [lein-cljsbuild "1.1.2" :exclusions [[org.clojure/clojure]]]]

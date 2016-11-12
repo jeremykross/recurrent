@@ -1,7 +1,7 @@
 (ns recurrent.drivers.pixi
   (:require
     [elmalike.signal :as e-sig]
-    (cljsjs.pixi)))
+    cljsjs.pixi))
 
 (defonce -instances- (atom {}))
 
