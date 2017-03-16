@@ -12,7 +12,6 @@
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  [cljsjs/virtual-dom "2.1.1-0"]
-                 [cljsjs/pixi "3.0.10-0"]
                  [rm-hull/monet "0.3.0"]]
   
   :plugins [[lein-figwheel "0.5.0-6"]

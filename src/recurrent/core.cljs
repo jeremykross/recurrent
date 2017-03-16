@@ -5,9 +5,7 @@
     [elmalike.signal :as e-sig]
     [elmalike.time :as e-time]
     [elmalike.mouse :as e-mouse]
-    [recurrent.drivers.dom :as dom-driver]
-    [recurrent.drivers.pixi :as pixi-driver]
-    cljsjs.virtual-dom)
+    [recurrent.drivers.dom :as dom-driver])
   (:require-macros
     [cljs.core.async.macros :as async-mac]))
 
@@ -66,25 +64,4 @@
         sinks))
     {:DOM (dom-driver/from-id "app")}))
 
-(defn test-pixi
-  []
-  (run!
-    (fn []
-      {:PIXI
-       (e-sig/foldp
-         (fn [entity t]
-           (js/console.log (str (get-in entity [:texture :frame])))
-           (update-in entity [:texture :frame 0] inc))
-         {:position [100 100]
-          :scale [1 1]
-          :width 32
-          :height 32
-          :anchor [0.5 0.5]
-          :texture {:path "images/citytiles.png"
-                    :frame [0 32 32 32]}
-          :rotation 0}
-         (e-time/fps 1))})
-    {:PIXI (pixi-driver/make-pixi-driver "app")}))
-
-(defn on-js-reload []
-  (test-pixi))
+(defn on-js-reload [])

@@ -3,10 +3,6 @@
     [elmalike.signal :as e-sig]
     (cljsjs.virtual-dom)))
 
-[:div {}
- [:h1 {} "Hello World"]
- [:p {} "quick brown fox"]]
-
 (def VirtualDom js/virtualDom)
 
 (defn vtree-for
