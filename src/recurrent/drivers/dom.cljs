@@ -43,19 +43,18 @@
       (fn [selector]
         (fn [event]
           (let [event$ (e-sig/signal)
-                elem-tap-$ (e-sig/tap elem$)]
+                elem-tap-$ (e-sig/tap elem$)
+                callback (fn [e] (when e (e-sig/on-next event$ e)))]
             (e-sig/subscribe-next 
               elem-tap-$
               (fn [elem]
-                (e-sig/on-completed elem-tap-$)
                 (let [selection 
                       (if (= "root" (name selector))
                         elem
-                        (.querySelector elem selector))]
-                  (.addEventListener selection
-                                     (name event)
-                                     (fn [e]
-                                       (e-sig/on-next event$ e))))))
+                        (.querySelector elem (name selector)))]
+                  (when selection
+                    (.removeEventListener selection (name event) callback)
+                    (.addEventListener selection (name event) callback)))))
             event$))))))
 
 (defn from-id

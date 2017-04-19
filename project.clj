@@ -11,6 +11,8 @@
                  [elmalike "0.1.0-SNAPSHOT"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
+                 [org.clojars.jkross/cljs-ajax "0.5.9-SNAPSHOT"]
+                 ;[cljs-ajax "0.5.8"]
                  [cljsjs/virtual-dom "2.1.1-0"]
                  [rm-hull/monet "0.3.0"]]
   
