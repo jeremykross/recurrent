@@ -42,7 +42,9 @@
         sources (call-drivers drivers sink-proxies)
         sinks (main sources)]
     (replicate-many! sinks sink-proxies)
-    sources))
+
+    {:sources sources
+     :sinks sinks}))
 
 (defn test-dom!
   []
