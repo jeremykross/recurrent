@@ -1,4 +1,4 @@
-(defproject recurrent "0.1.0-SNAPSHOT"
+(defproject recurrent "0.1.1-SNAPSHOT"
   :description "An implementation of cycle.js in clojurescript."
   :url "https://github.com/jeremykross/recurrent"
   :license {:name "Eclipse Public License"
@@ -8,7 +8,7 @@
   
   :dependencies [[org.clojure/clojure "1.7.0"]
                  [org.clojure/clojurescript "1.7.170"]
-                 [elmalike "0.1.0-SNAPSHOT"]
+                 [elmalike "0.1.1-SNAPSHOT"]
                  [org.clojure/core.async "0.2.374"
                   :exclusions [org.clojure/tools.reader]]
                  ;[org.clojars.jkross/cljs-ajax "0.5.9-SNAPSHOT"]
