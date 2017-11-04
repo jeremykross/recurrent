@@ -15,6 +15,7 @@
                  [cljs-ajax "0.6.0"]
                  [rm-hull/monet "0.3.0"]
                  [hipo "0.5.2"]
+                 [garden "1.3.3"]
                  [prismatic/dommy "1.1.0"]]
   
   :plugins [[lein-figwheel "0.5.0-6"]

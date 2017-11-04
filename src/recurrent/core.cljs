@@ -32,9 +32,9 @@
       (async/pipe (async/tap 
                     (:mult signal) 
                     (async/chan (async/sliding-buffer 1) nil))
-                  (:ch (proxies k))))
-    (when @signal
-      (e-sig/on-next (proxies k) @signal))))
+                  (:ch (proxies k)))
+      (when @signal
+        (e-sig/on-next (proxies k) @signal)))))
 
 (defn run!
   [main drivers]
