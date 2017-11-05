@@ -1,5 +1,6 @@
 (ns recurrent.drivers.dom
   (:require
+    [clojure.string :as string]
     [dommy.core :as dommy :include-macros true]
     [elmalike.signal :as e-sig]
     [hipo.core :as hipo]))
@@ -46,10 +47,17 @@
             event$))))))
 
 (defn isolate-source
-  [])
+  [scope source]
+  (fn [selector]
+    (source (str "." scope " " selector))))
 
 (defn isolate-sink
-  [])
+  [scope dom-$]
+  (elmalike.signal/map
+    (fn [dom]
+      (update-in dom [1 :class] (fn [classNames]
+                                  (str classNames " " scope))))
+    dom-$))
 
 (defn from-id
   [id]
