@@ -55,8 +55,11 @@
   [scope dom-$]
   (elmalike.signal/map
     (fn [dom]
-      (update-in dom [1 :class] (fn [classNames]
-                                  (str classNames " " scope))))
+      (if (map? (nth dom 1))
+        (update-in dom [1 :class] (fn [classNames]
+                                    (str classNames " " scope)))
+        (let [[before after] (split-at 1 dom)]
+          (into [] (concat (conj (into [] before) {:class scope}) after)))))
     dom-$))
 
 (defn from-id
