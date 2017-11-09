@@ -9,12 +9,13 @@
 
 
 (defmacro defcomponent
-  [named source-keys dom-sink-key dom-sink-fn & other-sinks]
+  [named source-keys initializer dom-sink-key dom-sink-fn & other-sinks]
   (let [other-sinks (into {} (map vec (partition 2 other-sinks)))
         dom-key (first source-keys)]
     `(defn ~named
        [props# sources#]
        (let [scope# (gensym)
+             data# (~initializer props# sources#)
              dom-$# (recurrent.drivers.dom/isolate-source scope# (~dom-key sources#))
              sources# (merge (select-keys sources# ~source-keys)
                              {~dom-key dom-$#})
