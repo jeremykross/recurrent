@@ -15,7 +15,7 @@
     `(defn ~named
        [props# sources#]
        (let [scope# (gensym)
-             data# (~initializer props# sources#)
+             this# (~initializer props# sources#)
              dom-$# (recurrent.drivers.dom/isolate-source scope# (~dom-key sources#))
              sources# (merge (select-keys sources# ~source-keys)
                              {~dom-key dom-$#})
@@ -24,9 +24,9 @@
              sinks# (merge
                       {~dom-sink-key (recurrent.drivers.dom/isolate-sink 
                                        scope#
-                                       (~dom-sink-fn props# sources# sink-placeholders#))}
+                                       (~dom-sink-fn this# props# sources# sink-placeholders#))}
                       (into {} (map (fn [[sink-k# sink-fn#]]
-                                      [sink-k# (sink-fn# props# sources# sink-placeholders#)]) ~other-sinks)))]
+                                      [sink-k# (sink-fn# this# props# sources# sink-placeholders#)]) ~other-sinks)))]
 
          (doseq [[k# sink#] sink-placeholders#]
            (elmalike.signal/pipe (k# sinks#) (k# sink-placeholders#)))
