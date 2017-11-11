@@ -42,6 +42,7 @@
                       (if (= "root" (name selector))
                         elem
                         [elem (name selector)])]
+                  (println "Attaching to: " selection " for " event)
                   (dommy/unlisten! selection (name event) callback)
                   (dommy/listen! selection (name event) callback))))
             event$))))))
@@ -49,7 +50,10 @@
 (defn isolate-source
   [scope source]
   (fn [selector]
-    (source (str "." scope " " selector))))
+    (source 
+      (if (not= (name selector) "root")
+        (str "." scope " " selector)
+        (str "." scope)))))
 
 (defn isolate-sink
   [scope dom-$]
