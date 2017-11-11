@@ -42,10 +42,11 @@
                 (let [selection 
                       (if (= "root" (name selector))
                         [elem]
-                        (js->clj (.querySelectorAll elem (name selector))))]
-                  (doseq [s selection]
-                    (.removeEventListener s (name event) callback)
-                    (.addEventListener s (name event) callback)))))
+                        (dommy/sel (name selector)))]
+                  (.forEach selection
+                            (fn [s]
+                              (dommy/unlisten! s (name event) callback)
+                              (dommy/listen! s (name event) callback))))))
             event$))))))
 
 (defn isolate-source
