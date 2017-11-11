@@ -1,5 +1,6 @@
 (ns recurrent.drivers.dom
   (:require
+    elmalike.time
     [clojure.string :as string]
     [dommy.core :as dommy :include-macros true]
     [elmalike.signal :as e-sig]
@@ -40,11 +41,11 @@
               (fn [elem]
                 (let [selection 
                       (if (= "root" (name selector))
-                        elem
-                        [elem (name selector)])]
-                  (println "Attaching to: " selection " for " event)
-                  (dommy/unlisten! selection (name event) callback)
-                  (dommy/listen! selection (name event) callback))))
+                        [elem]
+                        (js->clj (.querySelectorAll elem (name selector))))]
+                  (doseq [s selection]
+                    (.removeEventListener s (name event) callback)
+                    (.addEventListener s (name event) callback)))))
             event$))))))
 
 (defn isolate-source
