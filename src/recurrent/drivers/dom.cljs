@@ -1,10 +1,18 @@
 (ns recurrent.drivers.dom
   (:require
     elmalike.time
+    hipo.interceptor
     [clojure.string :as string]
     [dommy.core :as dommy :include-macros true]
     [elmalike.signal :as e-sig]
     [hipo.core :as hipo]))
+
+(defrecord DirtyInterceptor [updated]
+  hipo.interceptor/Interceptor
+  (-intercept [_ t m f]
+    (if (not= (:new-value m) (:old-value m))
+      (swap! updated conj (:target m)))
+    (f)))
 
 (defn from-element
   [parent]
@@ -15,18 +23,20 @@
         (fn [[curr next]]
           (when (not= curr next)
             (when (and curr (not next))
-              (println curr)
               (let [elem (hipo/create curr)]
                 (set! (.-innerHTML parent) "")
                 (.appendChild parent elem)
                 (when (not (e-sig/is-completed elem$))
-                  (e-sig/on-next elem$ elem))))
+                  (e-sig/on-next elem$ [elem #{elem}]))))
             (when (and curr next)
-              (let [elem (hipo/reconciliate! @elem$ next)]
-                (e-sig/on-next elem$ @elem$)))))
+              (println "working: " @elem$)
+              (let [interceptor (DirtyInterceptor. (atom #{}))
+                    elem (hipo/reconciliate! (first @elem$) next 
+                                             {:interceptors [interceptor]})]
+                  (e-sig/on-next elem$ [(first @elem$) @(:updated interceptor)])))))
         (fn []
           (js/alert "Removing!")
-          (.removeChild parent @elem$))
+          (.removeChild parent (first @elem$)))
         identity)
 
       (fn [selector]
@@ -38,15 +48,17 @@
                              (e-sig/on-next event$ e)))]
             (e-sig/subscribe-next 
               elem-tap-$
-              (fn [elem]
+              (fn [[elem updated]]
                 (let [selection 
                       (if (= "root" (name selector))
                         [elem]
                         (dommy/sel (name selector)))]
                   (.forEach selection
                             (fn [s]
-                              (dommy/unlisten! s (name event) callback)
-                              (dommy/listen! s (name event) callback))))))
+                              (when (contains? updated s)
+                                (println "Refreshing listeners")
+                                (dommy/unlisten! s (name event) callback)
+                                (dommy/listen! s (name event) callback)))))))
             event$))))))
 
 (defn isolate-source
