@@ -29,7 +29,6 @@
                 (when (not (e-sig/is-completed elem$))
                   (e-sig/on-next elem$ [elem #{elem}]))))
             (when (and curr next)
-              (println "working: " @elem$)
               (let [interceptor (DirtyInterceptor. (atom #{}))
                     elem (hipo/reconciliate! (first @elem$) next 
                                              {:interceptors [interceptor]})]
@@ -44,8 +43,8 @@
           (let [event$ (e-sig/signal)
                 elem-tap-$ (e-sig/tap elem$)
                 callback (fn [e] 
-                           (when e 
-                             (e-sig/on-next event$ e)))]
+                           (.stopPropagation e)
+                           (e-sig/on-next event$ e))]
             (e-sig/subscribe-next 
               elem-tap-$
               (fn [[elem updated]]
@@ -56,7 +55,6 @@
                   (.forEach selection
                             (fn [s]
                               (when (contains? updated s)
-                                (println "Refreshing listeners")
                                 (dommy/unlisten! s (name event) callback)
                                 (dommy/listen! s (name event) callback)))))))
             event$))))))

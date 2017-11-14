@@ -1,10 +1,10 @@
 (ns recurrent.helpers)
 
 (defmacro collect-markup-and-style
-  [dom-key css-key & components]
+  [class-name dom-key css-key & components]
   `{~css-key (recurrent.drivers.css/collect ~css-key
                                             ~@components)
-    ~dom-key (recurrent.drivers.dom/collect ~dom-key
+    ~dom-key (recurrent.drivers.dom/collect ~class-name ~dom-key
                                             ~@components)})
 
 
