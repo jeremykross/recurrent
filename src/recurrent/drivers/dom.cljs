@@ -10,7 +10,16 @@
 (defrecord DirtyInterceptor [updated]
   hipo.interceptor/Interceptor
   (-intercept [_ t m f]
-    (if (not= (:new-value m) (:old-value m))
+    (when 
+      (not= (:hipo/key (meta (:new-value m)))
+            (:hipo/key (meta (:old-value m))))
+      (let [dommy-listeners (or (.-dommyEventListeners (:target m)) {})
+            listeners-sans-selector (or (dommy-listeners nil) {})]
+        (doseq [[evt fn-mapping] listeners-sans-selector]
+          (doseq [[f _] fn-mapping]
+            (dommy/unlisten! (:target m) evt f)))))
+
+    (when (not= (:new-value m) (:old-value m))
       (swap! updated conj (:target m)))
     (f)))
 
@@ -43,6 +52,7 @@
           (let [event$ (e-sig/signal)
                 elem-tap-$ (e-sig/tap elem$)
                 callback (fn [e] 
+                           (println "For selector:" selector "handling" event)
                            (.stopPropagation e)
                            (e-sig/on-next event$ e))]
             (e-sig/subscribe-next 
@@ -52,6 +62,7 @@
                       (if (= "root" (name selector))
                         [elem]
                         (dommy/sel (name selector)))]
+
                   (.forEach selection
                             (fn [s]
                               (when (contains? updated s)
