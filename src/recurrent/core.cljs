@@ -37,12 +37,13 @@
         (e-sig/on-next (proxies k) @signal)))))
 
 (defn run!
-  [main drivers]
-  (let [sink-proxies (make-sink-proxies drivers)
-        sources (call-drivers drivers sink-proxies)
-        sinks (main sources)]
-    (replicate-many! sinks sink-proxies)
-    [sources sinks]))
+  ([main drivers] (run! main {} {} drivers))
+  ([main props other-sources drivers]
+    (let [sink-proxies (make-sink-proxies drivers)
+          sources (call-drivers drivers sink-proxies)
+          sinks (main props (merge sources other-sources))]
+      (replicate-many! sinks sink-proxies)
+      {:sources sources :sinks sinks})))
 
 (defn test-dom!
   []

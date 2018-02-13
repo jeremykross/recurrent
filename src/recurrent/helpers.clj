@@ -17,13 +17,16 @@
        (defn ~named
          [props# sources#]
          (let [scope# (gensym)
-               this# (~initializer props# sources#)
                dom-$# (recurrent.drivers.dom/isolate-source scope# (~dom-key sources#))
                props# (select-keys props# ~prop-keys)
                sources# (merge (select-keys sources# ~source-keys)
+                               {~(keyword (str "global-" (name dom-key)))
+                                (~dom-key sources#)}
                                {~dom-key dom-$#})
-               sink-placeholders# (into {} (map (fn [[k# _#]]
-                                                  [k# (elmalike/signal)]) ~other-sinks))
+               this# (~initializer props# sources#)
+               sink-placeholders# (into {~dom-sink-key (elmalike/signal)}
+                                        (map (fn [[k# _#]]
+                                               [k# (elmalike/signal)]) ~other-sinks))
                sinks# (merge
                         {~dom-sink-key (recurrent.drivers.dom/isolate-sink 
                                          scope#

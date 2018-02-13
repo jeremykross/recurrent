@@ -28,8 +28,10 @@
   (fn [vtree$]
     (let [elem$ (e-sig/signal)]
       (e-sig/subscribe
-        (e-sig/sliding-slice 2 vtree$)
-        (fn [[curr next]]
+        (e-sig/latest
+          (e-sig/sliding-slice 2 vtree$)
+          (e-sig/count vtree$))
+        (fn [[[curr next] update-count]]
           (when (not= curr next)
             (when (and curr (not next))
               (let [elem (hipo/create curr)]
@@ -41,7 +43,7 @@
               (let [interceptor (DirtyInterceptor. (atom #{}))
                     elem (hipo/reconciliate! (first @elem$) next 
                                              {:interceptors [interceptor]})]
-                  (e-sig/on-next elem$ [(first @elem$) @(:updated interceptor)])))))
+                  (e-sig/on-next elem$ [(first @elem$) @(:updated interceptor) update-count])))))
         (fn []
           (js/alert "Removing!")
           (.removeChild parent (first @elem$)))
@@ -52,12 +54,11 @@
           (let [event$ (e-sig/signal)
                 elem-tap-$ (e-sig/tap elem$)
                 callback (fn [e] 
-                           (println "For selector:" selector "handling" event)
                            (.stopPropagation e)
                            (e-sig/on-next event$ e))]
             (e-sig/subscribe-next 
               elem-tap-$
-              (fn [[elem updated]]
+              (fn [[elem updated update-count]]
                 (let [selection 
                       (if (= "root" (name selector))
                         [elem]
@@ -65,7 +66,7 @@
 
                   (.forEach selection
                             (fn [s]
-                              (when (contains? updated s)
+                              (when (or (contains? updated s) (= update-count 1))
                                 (dommy/unlisten! s (name event) callback)
                                 (dommy/listen! s (name event) callback)))))))
             event$))))))
@@ -82,7 +83,7 @@
   [scope dom-$]
   (elmalike.signal/map
     (fn [dom]
-      (if (map? (nth dom 1))
+      (if (and dom (>= (count dom) 2) (map? (nth dom 1)))
         (update-in dom [1 :class] (fn [classNames]
                                     (str classNames " " scope)))
         (let [[before after] (split-at 1 dom)]
