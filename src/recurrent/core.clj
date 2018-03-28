@@ -1,6 +1,7 @@
-(ns recurrent.helpers)
+(ns recurrent.core)
 
 (defmacro defcomponent
+  "Defines a recurrent component."
   [named prop-keys source-keys initializer 
    css dom-sink-key dom-sink-fn & other-sinks]
   (let [other-sinks (into {} (map vec (partition 2 other-sinks)))

@@ -1,6 +1,6 @@
 (ns recurrent.drivers.http
   (:require 
-    [elmalike.signal :as e-signal]
+    [ulmus.core :as e-signal]
     [ajax.core :as ajax]))
 
 ;Outgoing
@@ -9,15 +9,15 @@
 ; Incoming
 ; { :method, :route, :body }
 
-(def AJAX-METHODS {:get ajax/GET
-                   :post ajax/POST})
+(def ^{:private true} AJAX-METHODS {:get ajax/GET
+                                    :post ajax/POST})
 
 (defn for-url
   ([url] (for-url url {}))
   ([url config]
    (fn [outgoing-$]
      (let [incoming-$ (e-signal/signal)]
-       (e-signal/subscribe-next 
+       (e-signal/subscribe-next!
          outgoing-$
          (fn [outgoing]
            ((AJAX-METHODS (:method outgoing))
@@ -27,7 +27,7 @@
                     :response-format :json
                     :params (:body outgoing)
                     :handler (fn [res]
-                               (e-signal/on-next 
+                               (e-signal/next!
                                  incoming-$
                                  (with-meta
                                    res
@@ -41,10 +41,10 @@
          ([method] (sink method "/" {}))
          ([method route] (sink method route {}))
          ([method route body]
-         (e-signal/on-next outgoing-$ 
-                           {:method method
-                            :route route
-                            :body body})
+          (e-signal/next! outgoing-$ 
+                          {:method method
+                           :route route
+                           :body body})
          (e-signal/filter
            (fn [res] (= (meta res) {:method method
                                     :route route}))

@@ -2,22 +2,20 @@
   (:refer-clojure :exclude [run!])
   (:require 
     [cljs.core.async :as async]
-    [elmalike.signal :as e-sig]
-    [elmalike.time :as e-time]
-    [elmalike.mouse :as e-mouse]
+    [ulmus.core :as e-sig]
     [recurrent.drivers.dom :as dom-driver])
   (:require-macros
     [cljs.core.async.macros :as async-mac]))
 
 
-(defn make-sink-proxies
+(defn- make-sink-proxies
   [drivers]
   (reduce (fn [sink-proxies [k v]]
             (assoc sink-proxies
                    k (e-sig/signal)))
           {} drivers))
 
-(defn call-drivers
+(defn- call-drivers
   [drivers sink-proxies]
   (let [sources (reduce (fn [sources [k sink]]
                           (assoc sources
@@ -25,7 +23,7 @@
                       {} sink-proxies)]
     sources))
 
-(defn replicate-many!
+(defn- replicate-many!
   [signals proxies]
   (doseq [[k signal] signals]
     (when (proxies k)
@@ -34,9 +32,10 @@
                     (async/chan (async/sliding-buffer 1) nil))
                   (:ch (proxies k)))
       (when @signal
-        (e-sig/on-next (proxies k) @signal)))))
+        (e-sig/next! (proxies k) @signal)))))
 
 (defn run!
+  "Take a function to be run `main`, `props` (which is a map where the values are non-signals), `sources` (which is a map where the values are signals), and drivers (a map where the values are recurrent drivers).  Calls the function provided as main passing the props and the merging of the sources and drivers.  Will match the returned sinks from `main` with the provided drivers to perform associated mutations."
   ([main drivers] (run! main {} {} drivers))
   ([main props other-sources drivers]
     (let [sink-proxies (make-sink-proxies drivers)
@@ -44,25 +43,3 @@
           sinks (main props (merge sources other-sources))]
       (replicate-many! sinks sink-proxies)
       {:sources sources :sinks sinks})))
-
-(defn test-dom!
-  []
-  (run!
-    (fn [sources]
-      (let [mouse-pos$ (((:DOM sources) ":root") "mousemove")
-            sinks {:DOM 
-                   (->> (e-sig/map
-                          (fn [e] [(.-clientX e) 
-                                   (.-clientY e)]) mouse-pos$)
-                     (e-sig/start-with [0 0])
-                     (e-sig/map  
-                       (fn [x]
-                         [:div {:className "foo"
-                                :style {:height "100px"
-                                        :backgroundColor "cornflowerblue"}}
-                          (str "Mouse Pos: " x)]))
-                     )}]
-        sinks))
-    {:DOM (dom-driver/from-id "app")}))
-
-(defn on-js-reload [])

@@ -1,13 +1,12 @@
 (ns recurrent.drivers.dom
   (:require
-    elmalike.time
     hipo.interceptor
     [clojure.string :as string]
     [dommy.core :as dommy :include-macros true]
-    [elmalike.signal :as e-sig]
+    [ulmus.core :as e-sig]
     [hipo.core :as hipo]))
 
-(defrecord DirtyInterceptor [updated]
+(defrecord ^{:private true} DirtyInterceptor [updated]
   hipo.interceptor/Interceptor
   (-intercept [_ t m f]
     (when 
@@ -27,7 +26,7 @@
   [parent]
   (fn [vtree$]
     (let [elem$ (e-sig/signal)]
-      (e-sig/subscribe
+      (e-sig/subscribe!
         (e-sig/latest
           (e-sig/sliding-slice 2 vtree$)
           (e-sig/count vtree$))
@@ -37,26 +36,25 @@
               (let [elem (hipo/create curr)]
                 (set! (.-innerHTML parent) "")
                 (.appendChild parent elem)
-                (when (not (e-sig/is-completed elem$))
-                  (e-sig/on-next elem$ [elem #{elem}]))))
+                (when (not (e-sig/is-completed? elem$))
+                  (e-sig/next! elem$ [elem #{elem}]))))
             (when (and curr next)
               (let [interceptor (DirtyInterceptor. (atom #{}))
                     elem (hipo/reconciliate! (first @elem$) next 
                                              {:interceptors [interceptor]})]
-                  (e-sig/on-next elem$ [(first @elem$) @(:updated interceptor) update-count])))))
+                  (e-sig/next! elem$ [(first @elem$) @(:updated interceptor) update-count])))))
         (fn []
-          (js/alert "Removing!")
           (.removeChild parent (first @elem$)))
         identity)
 
       (fn [selector]
         (fn [event]
           (let [event$ (e-sig/signal)
-                elem-tap-$ (e-sig/tap elem$)
+                elem-tap-$ (e-sig/map identity elem$)
                 callback (fn [e] 
                            (.stopPropagation e)
-                           (e-sig/on-next event$ e))]
-            (e-sig/subscribe-next 
+                           (e-sig/next! event$ e))]
+            (e-sig/subscribe-next!
               elem-tap-$
               (fn [[elem updated update-count]]
                 (let [selection 
@@ -71,7 +69,11 @@
                                 (dommy/listen! s (name event) callback)))))))
             event$))))))
 
-(defn isolate-source
+(defn from-id
+  [id]
+  (from-element (.getElementById js/document id)))
+
+(defn- isolate-source
   [scope source]
   (fn [selector]
     (source 
@@ -79,9 +81,9 @@
         (str "." scope " " selector)
         (str "." scope)))))
 
-(defn isolate-sink
+(defn- isolate-sink
   [scope dom-$]
-  (elmalike.signal/map
+  (e-sig/map
     (fn [dom]
       (if (and dom (>= (count dom) 2) (map? (nth dom 1)))
         (update-in dom [1 :class] (fn [classNames]
@@ -90,6 +92,3 @@
           (into [] (concat (conj (into [] before) {:class scope}) after)))))
     dom-$))
 
-(defn from-id
-  [id]
-  (from-element (.getElementById js/document id)))
