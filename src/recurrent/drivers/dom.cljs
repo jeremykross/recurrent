@@ -32,8 +32,8 @@
           (e-sig/count vtree$))
         (fn [[[curr next] update-count]]
           (when (not= curr next)
-            (when (and curr (not next))
-              (let [elem (hipo/create curr)]
+            (when (and next (not curr))
+              (let [elem (hipo/create next)]
                 (set! (.-innerHTML parent) "")
                 (.appendChild parent elem)
                 (when (not (e-sig/is-completed? elem$))
@@ -47,27 +47,26 @@
           (.removeChild parent (first @elem$)))
         identity)
 
-      (fn [selector]
-        (fn [event]
-          (let [event$ (e-sig/signal)
-                elem-tap-$ (e-sig/map identity elem$)
-                callback (fn [e] 
-                           (.stopPropagation e)
-                           (e-sig/next! event$ e))]
-            (e-sig/subscribe-next!
-              elem-tap-$
-              (fn [[elem updated update-count]]
-                (let [selection 
-                      (if (= "root" (name selector))
-                        [elem]
-                        (dommy/sel (name selector)))]
+      (fn [selector event]
+        (let [event$ (e-sig/signal)
+              elem-tap-$ (e-sig/map identity elem$)
+              callback (fn [e] 
+                         (.stopPropagation e)
+                         (e-sig/next! event$ e))]
+          (e-sig/subscribe-next!
+            elem-tap-$
+            (fn [[elem updated update-count]]
+              (let [selection 
+                    (if (= "root" (name selector))
+                      [elem]
+                      (dommy/sel (name selector)))]
 
-                  (.forEach selection
-                            (fn [s]
-                              (when (or (contains? updated s) (= update-count 1))
-                                (dommy/unlisten! s (name event) callback)
-                                (dommy/listen! s (name event) callback)))))))
-            event$))))))
+                (.forEach selection
+                          (fn [s]
+                            (when true ;(or (contains? updated s) (= update-count 1))
+                              (dommy/unlisten! s (name event) callback)
+                              (dommy/listen! s (name event) callback)))))))
+          event$)))))
 
 (defn from-id
   [id]
@@ -75,20 +74,18 @@
 
 (defn- isolate-source
   [scope source]
-  (fn [selector]
+  (fn [selector event]
     (source 
       (if (not= (name selector) "root")
         (str "." scope " " selector)
-        (str "." scope)))))
+        (str "." scope "*:first-child"))
+      event)))
 
 (defn- isolate-sink
   [scope dom-$]
   (e-sig/map
     (fn [dom]
-      (if (and dom (>= (count dom) 2) (map? (nth dom 1)))
-        (update-in dom [1 :class] (fn [classNames]
-                                    (str classNames " " scope)))
-        (let [[before after] (split-at 1 dom)]
-          (into [] (concat (conj (into [] before) {:class scope}) after)))))
+      [:div {:class (name scope)}
+       dom])
     dom-$))
 

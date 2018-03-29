@@ -25,9 +25,9 @@
                                 (~dom-key sources#)}
                                {~dom-key dom-$#})
                this# (~initializer props# sources#)
-               sink-placeholders# (into {~dom-sink-key (elmalike/signal)}
+               sink-placeholders# (into {~dom-sink-key (ulmus.core/signal)}
                                         (map (fn [[k# _#]]
-                                               [k# (elmalike/signal)]) ~other-sinks))
+                                               [k# (ulmus.core/signal)]) ~other-sinks))
                sinks# (merge
                         {~dom-sink-key (recurrent.drivers.dom/isolate-sink 
                                          scope#
@@ -36,6 +36,6 @@
                                         [sink-k# (sink-fn# this# props# sources# sink-placeholders#)]) ~other-sinks)))]
 
            (doseq [[k# sink#] sink-placeholders#]
-             (elmalike.signal/pipe (k# sinks#) (k# sink-placeholders#)))
+             (ulmus.core/pipe! (k# sinks#) (k# sink-placeholders#)))
 
            sinks#)))))

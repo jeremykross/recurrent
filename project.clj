@@ -1,4 +1,4 @@
-(defproject recurrent "0.1.0-SNAPSHOT"
+(defproject recurrent "0.1.1-SNAPSHOT"
   :description "Reactive programming implemented as a kinder layer over core.async."
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
