@@ -83,6 +83,10 @@ This example will render whatever is input in the text-box into a container on t
     {:dom-$ (recurrent.drivers.dom/from-id "app")}))
 ```
 
+You can find the [full example here](https://github.com/jeremykross/recurrent-hello-john).
+
+You might also like [recurrent-todo](https://github.com/jeremykross/recurrent-todo).
+
 ## Prior Art
 Many, many, thanks to the great [cycle.js](https://github.com/cyclejs/cyclejs) which inspired this work.
 
