@@ -10,6 +10,10 @@
        (when-let [existing# (dommy.core/sel1 ~(str "." named))]
          (dommy.core/remove! (dommy.core/sel1 "#style")
                              existing#))
+       (when (not (dommy.core/sel1 "#style"))
+         (dommy.core/append!
+           (.-body js/document)
+           (hipo.core/create [:div {:id "style"}])))
        (dommy.core/append!
          (dommy.core/sel1 "#style")
          (hipo.core/create
