@@ -85,7 +85,11 @@
   [scope dom-$]
   (e-sig/map
     (fn [dom]
-      [:div {:class (name scope)}
-       dom])
+      (if (map? (second dom))
+        (update-in dom [1] (fn [attrs]
+                             (assoc attrs :class
+                                    (str (:class attrs) " " (name scope)))))
+        (assoc-in dom [1] {:class (name scope)})))
+
     dom-$))
 
