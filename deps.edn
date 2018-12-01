@@ -1,0 +1,5 @@
+{:deps {cljs-http {:mvn/version "0.1.45"}
+        ulmus {:local/root "/home/jkross/Projects/ulmus"}
+        garden {:mvn/version "1.3.6"}
+        prismatic/dommy {:mvn/version "1.1.0"}
+        hipo {:mvn/version "0.5.2"}}}
