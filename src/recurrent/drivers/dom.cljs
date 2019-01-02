@@ -2,6 +2,7 @@
   (:require 
     [dommy.core :as dommy :include-macros true]
     [hipo.core :as hipo]
+    [hipo.interceptor :as interceptor]
     [ulmus.signal :as ulmus]))
 
 (defn create!
@@ -17,14 +18,14 @@
           (ulmus/>! elem-$ elem)))
 
       (fn [selector event]
-        (println "listening for:" selector "//" event)
         (let [events-$ (ulmus/signal)
               handler (fn [e] (ulmus/>! events-$ e))]
           (ulmus/subscribe! 
             elem-$
             (fn [elem]
-              (dommy/unlisten! [elem selector] event handler)
-              (dommy/listen! [elem selector] event handler)))
+              (doseq [e (dommy/sel elem selector)]
+                (dommy/unlisten! e event handler)
+                (dommy/listen! e event handler))))
           events-$)))))
 
 (defn for-id!
