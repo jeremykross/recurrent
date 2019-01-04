@@ -14,9 +14,10 @@
   (into {} (map (fn [[k sink-proxy]] [k (ulmus/splice! sink-proxy (sinks k))]) sink-proxies)))
 
 (defn start!
-  [main drivers]
-  (let [sink-proxies (make-sink-proxies drivers)
-        running-drivers (call-drivers! drivers sink-proxies)
-        sinks (main running-drivers)]
-    (replicate-many! sinks sink-proxies)
-    sinks))
+  [main props sources]
+  (let [drivers (into {} (filter (fn [[_ v]] (:recurrent/driver? (meta v))) sources))]
+    (let [sink-proxies (make-sink-proxies drivers)
+          running-drivers (call-drivers! drivers sink-proxies)
+          sinks (main props (merge sources running-drivers))]
+      (replicate-many! sinks sink-proxies)
+      sinks)))

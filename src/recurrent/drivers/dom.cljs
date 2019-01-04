@@ -7,26 +7,28 @@
 
 (defn create!
   [parent]
-  (fn [vdom-$]
-    (let [elem-$ (ulmus/signal)
-          elem (hipo/create [:div])]
-      (set! (.-innerHTML parent) "")
-      (.appendChild parent elem)
-      (ulmus/subscribe! vdom-$
-        (fn [vdom]
-          (hipo/reconciliate! elem vdom)
-          (ulmus/>! elem-$ elem)))
+  (with-meta
+    (fn [vdom-$]
+      (let [elem-$ (ulmus/signal)
+            elem (hipo/create [:div])]
+        (set! (.-innerHTML parent) "")
+        (.appendChild parent elem)
+        (ulmus/subscribe! vdom-$
+          (fn [vdom]
+            (hipo/reconciliate! elem vdom)
+            (ulmus/>! elem-$ elem)))
 
-      (fn [selector event]
-        (let [events-$ (ulmus/signal)
-              handler (fn [e] (ulmus/>! events-$ e))]
-          (ulmus/subscribe! 
-            elem-$
-            (fn [elem]
-              (doseq [e (dommy/sel elem selector)]
-                (dommy/unlisten! e event handler)
-                (dommy/listen! e event handler))))
-          events-$)))))
+        (fn [selector event]
+          (let [events-$ (ulmus/signal)
+                handler (fn [e] (ulmus/>! events-$ e))]
+            (ulmus/subscribe! 
+              elem-$
+              (fn [elem]
+                (doseq [e (dommy/sel elem selector)]
+                  (dommy/unlisten! e event handler)
+                  (dommy/listen! e event handler))))
+            events-$))))
+    {:recurrent/driver? true}))
 
 (defn for-id!
   [id]
