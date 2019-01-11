@@ -116,19 +116,4 @@
                        
 
 
-(defn transduce-state
-  [& args]
-  (let [{:keys [enter exit init]
-         :or {enter (fn [acc [k v]] (assoc acc k v))
-              exit (fn [acc [k v]] (dissoc acc k))
-              init {}}} (apply hash-map args)]
-    (fn [state-$]
-      (ulmus/reduce (fn [acc state]
-                      (let [enter-keys (sets/difference (into #{} (keys state))
-                                                        (into #{} (keys acc)))
-                            exit-keys (sets/difference (into #{} (keys acc))
-                                                       (into #{} (keys state)))]
-                        (let [entered (reduce enter acc (select-keys state enter-keys))
-                              exited (reduce exit entered (select-keys state exit-keys))]
-                          exited)))
-                    init state-$))))
+
