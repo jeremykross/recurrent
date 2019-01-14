@@ -20,7 +20,8 @@
 
         (fn [selector event]
           (let [events-$ (ulmus/signal)
-                handler (fn [e] (ulmus/>! events-$ e))]
+                handler (fn [e]
+                          (ulmus/>! events-$ e))]
             (ulmus/subscribe! 
               elem-$
               (fn [elem]
