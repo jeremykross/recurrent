@@ -48,7 +48,9 @@
                                                   :recurrent/dom-$ scoped-dom))]
       (assoc component-sinks
              :recurrent/dom-$ (ulmus/map (fn [dom]
-                                           (if (map? (second dom))
-                                             (update-in dom [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
-                                             (assoc-in dom [1] {:class (str "recurrent-component " scope)})))
+                                           (with-meta 
+                                             (if (map? (second dom))
+                                               (update-in dom [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
+                                               (assoc-in dom [1] {:class (str "recurrent-component " scope)}))
+                                             {:hipo/key (str scope)}))
                                          (:recurrent/dom-$ component-sinks))))))
