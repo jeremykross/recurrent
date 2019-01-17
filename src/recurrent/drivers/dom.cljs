@@ -1,5 +1,6 @@
 (ns recurrent.drivers.dom
   (:require 
+    ulmus.time
     [dommy.core :as dommy :include-macros true]
     [hipo.core :as hipo]
     [hipo.interceptor :as interceptor]
@@ -13,6 +14,7 @@
             elem (hipo/create [:div])]
         (set! (.-innerHTML parent) "")
         (.appendChild parent elem)
+
         (ulmus/subscribe! vdom-$
           (fn [vdom]
             (hipo/reconciliate! elem vdom)
@@ -23,7 +25,7 @@
                 handler (fn [e]
                           (ulmus/>! events-$ e))]
             (ulmus/subscribe! 
-              elem-$
+              (ulmus.time/delay 0 elem-$)
               (fn [elem]
                 (doseq [e (dommy/sel elem selector)]
                   (dommy/unlisten! e event handler)
