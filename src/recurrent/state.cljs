@@ -1,5 +1,6 @@
 (ns recurrent.state
   (:require
+    recurrent.drivers.dom
     [clojure.set :as sets]
     [ulmus.signal :as ulmus]))
 
@@ -80,7 +81,7 @@
   [Component & opts] 
   (let [{:keys [collect keyed-by]
          :or {keyed-by (fn [index child-state] (str index))
-              collect (fn [children-$] 
+              collect (fn [_ _ children-$] 
                         {:recurrent/dom-$
                          (ulmus/map
                            (fn [children]
@@ -88,32 +89,33 @@
                                ~@children])
                            (ulmus/pickzip :recurrent/dom-$ children-$))})}}
         (apply hash-map opts)]
-    (fn [props sources]
-      (let [children-$ (ulmus/distinct 
-                         (ulmus/reduce
-                           (fn [children state]
-                             (let [state-keys (set (map-indexed keyed-by state))
-                                   existing-keys (set (keys children))
-                                   new-keys (sets/difference state-keys existing-keys)
-                                   lost-keys (sets/difference existing-keys state-keys)]
-                               (with-meta 
-                                 (merge (apply dissoc children lost-keys)
-                                        (into {} (map (fn [k] [k ((make-child
-                                                                    Component
-                                                                    keyed-by
-                                                                    k) props sources)])
-                                                      new-keys)))
-                                 {:state state})))
-                           {}
-                           (:recurrent/state-$ sources)))
-            ordered-children-$ (ulmus/map
-                                 (fn [children]
-                                   (let [state (:state (meta children))
-                                         child-keys (map-indexed keyed-by state)]
-                                     (mapv #(get children %) child-keys)))
-                                 children-$)]
-        (collect ordered-children-$)))))
+    (recurrent.drivers.dom/isolate
+      (fn [props sources]
+        (let [children-$ (ulmus/distinct 
+                           (ulmus/reduce
+                             (fn [children state]
+                               (let [state-keys (set (map-indexed keyed-by state))
+                                     existing-keys (set (keys children))
+                                     new-keys (sets/difference state-keys existing-keys)
+                                     lost-keys (sets/difference existing-keys state-keys)]
+                                 (with-meta 
+                                   (merge (apply dissoc children lost-keys)
+                                          (into {} (map (fn [k] [k ((make-child
+                                                                      Component
+                                                                      keyed-by
+                                                                      k) 
+                                                                    (assoc props
+                                                                           :recurrent/key k)
+                                                                    sources)])
+                                                        new-keys)))
+                                   {:state state})))
+                             {}
+                             (:recurrent/state-$ sources)))
+              ordered-children-$ (ulmus/map
+                                   (fn [children]
+                                     (let [state (:state (meta children))
+                                           child-keys (map-indexed keyed-by state)]
+                                       (mapv #(get children %) child-keys)))
+                                   children-$)]
+          (collect props sources ordered-children-$))))))
                        
-
-
-

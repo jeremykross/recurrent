@@ -11,6 +11,7 @@
   (with-meta
     (fn [vdom-$]
       (let [elem-$ (ulmus/signal)
+            elem-delay-$ (ulmus.time/delay 0 elem-$)
             elem (hipo/create [:div])]
         (set! (.-innerHTML parent) "")
         (.appendChild parent elem)
@@ -21,11 +22,12 @@
             (ulmus/>! elem-$ elem)))
 
         (fn [selector event]
+          (println "listening for: " selector " " event)
           (let [events-$ (ulmus/signal)
                 handler (fn [e]
                           (ulmus/>! events-$ e))]
             (ulmus/subscribe! 
-              (ulmus.time/delay 0 elem-$)
+              elem-delay-$
               (fn [elem]
                 (doseq [e (dommy/sel elem selector)]
                   (dommy/unlisten! e event handler)
