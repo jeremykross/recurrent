@@ -1,10 +1,13 @@
 (ns recurrent.drivers.dom
   (:require 
     ulmus.time
+    [clojure.walk :as walk]
     [dommy.core :as dommy :include-macros true]
     [hipo.core :as hipo]
     [hipo.interceptor :as interceptor]
     [ulmus.signal :as ulmus]))
+
+(defn- prune-nil [x] (walk/prewalk #(if (vector? %) (into [] (remove nil? %)) %) x))
 
 (defn create!
   [parent]
@@ -18,7 +21,7 @@
 
         (ulmus/subscribe! vdom-$
           (fn [vdom]
-            (hipo/reconciliate! elem vdom)
+            (hipo/reconciliate! elem (prune-nil vdom))
             (ulmus/>! elem-$ elem)))
 
         (fn [selector event]
