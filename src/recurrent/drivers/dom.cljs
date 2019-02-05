@@ -25,7 +25,6 @@
             (ulmus/>! elem-$ elem)))
 
         (fn [selector event]
-          (println "listening for: " selector " " event)
           (let [events-$ (ulmus/signal)
                 handler (fn [e]
                           (ulmus/>! events-$ e))]
