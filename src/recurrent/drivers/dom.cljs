@@ -7,7 +7,12 @@
     [hipo.interceptor :as interceptor]
     [ulmus.signal :as ulmus]))
 
-(defn- prune-nil [x] (walk/prewalk #(if (vector? %) (into [] (remove nil? %)) %) x))
+(defn- prune-nil [x] (walk/prewalk 
+                       (fn [form]
+                         (if (vector? form)
+                           (into [] (map #(if (nil? %) [:div] %) form)) 
+                           form))
+                       x))
 
 (defn create!
   [parent]
@@ -21,7 +26,7 @@
 
         (ulmus/subscribe! vdom-$
           (fn [vdom]
-            (hipo/reconciliate! elem (prune-nil vdom))
+            (hipo/reconciliate! elem (prune-nil vdom) {:interceptors []})
             (ulmus/>! elem-$ elem)))
 
         (fn [selector event]
