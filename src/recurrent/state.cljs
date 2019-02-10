@@ -40,7 +40,7 @@
           state-$ (ulmus/distinct (ulmus/reduce (fn [prev-state proc]
                                                   (proc prev-state))
                                                 nil (:recurrent/state-$ main-sinks)))]
-      (ulmus/splice! state-placeholder-$ (ulmus/distinct state-$))
+      (ulmus/splice! state-placeholder-$ state-$)
       main-sinks)))
 
 (defn index-for-key
