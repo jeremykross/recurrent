@@ -1,6 +1,6 @@
 (ns recurrent.state
   (:require
-    recurrent.drivers.dom
+    recurrent.drivers.vdom
     [clojure.set :as sets]
     [ulmus.signal :as ulmus]))
 
@@ -89,7 +89,7 @@
                                ~@children])
                            (ulmus/pickzip :recurrent/dom-$ children-$))})}}
         (apply hash-map opts)]
-    (recurrent.drivers.dom/isolate
+    (recurrent.drivers.vdom/isolate
       (fn [props sources]
         (let [children-$ (ulmus/distinct 
                            (ulmus/reduce
