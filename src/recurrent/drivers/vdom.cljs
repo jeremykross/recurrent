@@ -22,6 +22,7 @@
 (defn create!
   [parent]
   (set! (.-innerHTML parent) "")
+  (set! (.-requestAnimationFrame js/window) nil)
 
   (with-meta
     (fn [vdom-$]
