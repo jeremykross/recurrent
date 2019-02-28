@@ -30,6 +30,7 @@
             (ulmus/>! elem-$ elem)))
 
         (fn [selector event]
+          (println "Listening: " selector ", " event)
           (let [events-$ (ulmus/signal)
                 handler (fn [e]
                           (ulmus/>! events-$ e))]
@@ -41,13 +42,14 @@
                         (dommy/unlisten! e event handler)
                         (dommy/listen! e event handler))))]
 
-              (comment ulmus/subscribe!
+              (ulmus/on-closed!
                 events-$
-                (fn [e]
-                  (when (= e :ulmus/closed)
-                    (ulmus/unsubscribe!
-                      elem-delay-$
-                      elem-sub)))))
+                (fn []
+                  (println
+                    "CLOSE!")
+                  (ulmus/unsubscribe!
+                    elem-delay-$
+                    elem-sub)))
 
             events-$))))
     {:recurrent/driver? true}))
