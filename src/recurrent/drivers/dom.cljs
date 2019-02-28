@@ -33,12 +33,22 @@
           (let [events-$ (ulmus/signal)
                 handler (fn [e]
                           (ulmus/>! events-$ e))]
-            (ulmus/subscribe! 
-              elem-delay-$
-              (fn [elem]
-                (doseq [e (dommy/sel elem selector)]
-                  (dommy/unlisten! e event handler)
-                  (dommy/listen! e event handler))))
+            (let [elem-sub
+                  (ulmus/subscribe! 
+                    elem-delay-$
+                    (fn [elem]
+                      (doseq [e (dommy/sel elem selector)]
+                        (dommy/unlisten! e event handler)
+                        (dommy/listen! e event handler))))]
+
+              (comment ulmus/subscribe!
+                events-$
+                (fn [e]
+                  (when (= e :ulmus/closed)
+                    (ulmus/unsubscribe!
+                      elem-delay-$
+                      elem-sub)))))
+
             events-$))))
     {:recurrent/driver? true}))
 

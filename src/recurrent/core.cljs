@@ -21,3 +21,8 @@
           sinks (main props (merge sources running-drivers))]
       (replicate-many! sinks sink-proxies)
       sinks)))
+
+(defn close!
+  [c]
+  (doseq [[_ sink-$] c]
+    (ulmus/close! sink-$ :transitive? true)))
