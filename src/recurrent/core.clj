@@ -10,4 +10,4 @@
          (do
            ~@body)
          {:recurrent/component ~(keyword (str (:name (:ns &env)) "/" named))}))
-    (def ~named (recurrent.drivers.vdom/isolate ~(symbol (str "_" named))))))
+    (def ~named (recurrent.drivers.rum/isolate ~(symbol (str "_" named))))))
