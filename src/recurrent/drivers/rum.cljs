@@ -25,7 +25,7 @@
                  (.getElementById js/document parent-or-id)
                  parent-or-id)
         elem-$ (ulmus/signal)
-        elem-delay-$ (ulmus.time/delay 0 elem-$)]
+        elem-delay-$ (ulmus.time/frame elem-$)]
     (rum/unmount parent)
     (set! (.-innerHTML parent) "")
 
@@ -38,6 +38,9 @@
         (ulmus/subscribe! vdom-$
           (fn [vdom]
             (rum/mount (render vdom) parent)
+
+            ; attach some metadata to parent about what properties have changed!
+            ; selectively unlisten/listen!
             (ulmus/>! elem-$ parent)))
         (fn [selector event]
 
