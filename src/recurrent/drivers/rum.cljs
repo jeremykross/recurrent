@@ -15,9 +15,11 @@
                     #(rum/request-render component))))})
 
 (rum/defc render [dom] dom)
+(rum/defc portal [dom] (rum/portal dom (.-body js/document)))
 (rum/defc embed < recurrent-mixin [dom-$] @dom-$)
 
 (def blocked-events* (atom {}))
+
 
 (defn create!
   [parent-or-id]
