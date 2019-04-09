@@ -15,11 +15,9 @@
                     #(rum/request-render component))))})
 
 (rum/defc render [dom] dom)
-(rum/defc portal [dom] (rum/portal dom (.-body js/document)))
 (rum/defc embed < recurrent-mixin [dom-$] @dom-$)
 
 (def blocked-events* (atom {}))
-
 
 (defn create!
   [parent-or-id]
@@ -38,46 +36,63 @@
     (with-meta 
       (fn [vdom-$]
         (ulmus/subscribe! vdom-$
-          (fn [vdom]
-            (rum/mount (render vdom) parent)
+                          (fn [vdom]
+                            (rum/mount (render vdom) parent)
 
-            ; attach some metadata to parent about what properties have changed!
-            ; selectively unlisten/listen!
-            (ulmus/>! elem-$ parent)))
-        (fn [selector event]
+                            ; attach some metadata to parent about what properties have changed!
+                            ; selectively unlisten/listen!
+                            (ulmus/>! elem-$ parent)))
 
-          (when (not (get @blocked-events* event))
-            (swap! blocked-events*
-                   assoc
-                   event (.addEventListener parent event (fn [e] 
-                                                           (.stopPropagation e)))))
+        (let [driver
+              (fn [selector event]
+                (when (not (get @blocked-events* event))
+                  (swap! blocked-events*
+                         assoc
+                         event (.addEventListener parent event (fn [e] 
+                                                                 (.stopPropagation e)))))
 
-          (let [events-$ (ulmus/signal)
-                handler #(ulmus/>! events-$ %)]
-            (ulmus/subscribe!
-              elem-delay-$
-              (fn [elem]
-                (doseq [e (dommy/sel elem selector)]
-                  (dommy/unlisten! e event handler)
-                  (dommy/listen! e event handler))))
-            events-$)))
+                (let [events-$ (ulmus/signal)
+                      handler #(ulmus/>! events-$ %)]
+                  (ulmus/subscribe!
+                    elem-delay-$
+                    (fn [elem]
+                      (doseq [e (dommy/sel elem selector)]
+                        (dommy/unlisten! e event handler)
+                        (dommy/listen! e event handler))))
+                  events-$))]
+          (with-meta driver
+                     {:recurrent/root-source driver
+                      :recurrent/root-element parent})))
       {:recurrent/driver? true})))
 
 (defn isolate
   [Component]
   (fn [props sources]
+    (println "META:" (meta Component))
+    (println "Sourc emeta:" (meta (:recurrent/dom-$ sources)))
+
     (let [scope (gensym)
-          scoped-dom (fn [selector event] 
-                       ((:recurrent/dom-$ sources)
-                        (str "." scope " " (if (not= selector :root) selector) " ")
-                        event))
+          scoped-dom 
+          (if (:recurrent/portal (meta Component))
+            (:recurrent/root-source (meta (:recurrent/dom-$ sources)))
+            (with-meta 
+              (fn [selector event] 
+                ((:recurrent/dom-$ sources)
+                 (str "." scope " " (if (not= selector :root) selector) " ")
+                 event))
+              (meta (:recurrent/dom-$ sources))))
           component-sinks (Component props (assoc sources
                                                   :recurrent/dom-$ scoped-dom))]
       (assoc component-sinks
              :recurrent/dom-$
              (ulmus/map (fn [dom]
-                          (sablono/html
-                            (-> dom
-                                (update-in [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
-                                (assoc-in [1 :key] (str scope)))))
+                          (let [scoped-dom-sink
+                                (if (:recurrent/portal (meta Component))
+                                  (rum/portal (sablono/html dom)
+                                              (:recurrent/root-element (meta (:recurrent/dom-$ sources))))
+                                  (sablono/html
+                                    (-> dom
+                                        (update-in [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
+                                        (assoc-in [1 :key] (str scope)))))]
+                            scoped-dom-sink))
                         (ulmus/distinct (:recurrent/dom-$ component-sinks)))))))
