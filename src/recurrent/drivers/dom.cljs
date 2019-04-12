@@ -1,69 +1,97 @@
 (ns recurrent.drivers.dom
-  (:require 
+  (:require
     ulmus.time
-    [clojure.walk :as walk]
     [dommy.core :as dommy :include-macros true]
-    [hipo.core :as hipo]
-    [hipo.interceptor :as interceptor]
+    [rum.core :as rum :include-macros true]
+    [sablono.core :as sablono :include-macros true]
     [ulmus.signal :as ulmus]))
 
-(defn- prune-nil [x] (walk/prewalk 
-                       (fn [form]
-                         (if (vector? form)
-                           (into [] (map #(if (nil? %) [:div] %) form)) 
-                           form))
-                       x))
+(def recurrent-mixin
+  {:did-mount (fn [state]
+                (let [component (:rum/react-component state)
+                      dom-$ (first (:rum/args state))]
+                  (ulmus/subscribe!
+                    dom-$
+                    #(rum/request-render component))))})
+
+(rum/defc render [dom] dom)
+(rum/defc embed < recurrent-mixin [dom-$] @dom-$)
+
+(def blocked-events* (atom {}))
 
 (defn create!
-  [parent]
-  (with-meta
-    (fn [vdom-$]
-      (let [elem-$ (ulmus/signal)
-            elem-delay-$ (ulmus.time/delay 0 elem-$)
-            elem (hipo/create [:div])]
-        (set! (.-innerHTML parent) "")
-        (.appendChild parent elem)
+  [parent-or-id]
+  (let [parent (if (string? parent-or-id)
+                 (.getElementById js/document parent-or-id)
+                 parent-or-id)
+        elem-$ (ulmus/signal)
+        elem-delay-$ (ulmus.time/frame elem-$)]
+    (rum/unmount parent)
+    (set! (.-innerHTML parent) "")
 
+    ; stopPropagation on document to stop Reacts event system
+    (doseq [e ["keyup"]]
+      (.addEventListener js/document e (fn [e] (.stopPropagation e))))
+
+    (with-meta 
+      (fn [vdom-$]
         (ulmus/subscribe! vdom-$
-          (fn [vdom]
-            (hipo/reconciliate! elem (prune-nil vdom) {:interceptors []})
-            (ulmus/>! elem-$ elem)))
+                          (fn [vdom]
+                            (rum/mount (render vdom) parent)
 
-        (fn [selector event]
-          (let [events-$ (ulmus/signal)
-                handler (fn [e]
-                          (ulmus/>! events-$ e))]
-            (let [elem-sub
-                  (ulmus/subscribe! 
+                            ; attach some metadata to parent about what properties have changed!
+                            ; selectively unlisten/listen!
+                            (ulmus/>! elem-$ parent)))
+
+        (let [driver
+              (fn [selector event]
+                (when (not (get @blocked-events* event))
+                  (swap! blocked-events*
+                         assoc
+                         event (.addEventListener parent event (fn [e] 
+                                                                 (.stopPropagation e)))))
+
+                (let [events-$ (ulmus/signal)
+                      handler #(ulmus/>! events-$ %)]
+                  (ulmus/subscribe!
                     elem-delay-$
                     (fn [elem]
                       (doseq [e (dommy/sel elem selector)]
                         (dommy/unlisten! e event handler)
-                        (dommy/listen! e event handler))))]
-
-            events-$)))))
-    {:recurrent/driver? true}))
-
-(defn for-id!
-  [id]
-  (create!
-    (.getElementById js/document id)))
+                        (dommy/listen! e event handler))))
+                  events-$))]
+          (with-meta driver
+                     {:recurrent/root-source driver
+                      :recurrent/root-element parent})))
+      {:recurrent/driver? true})))
 
 (defn isolate
   [Component]
-  (fn [props sources]
+  (fn [sources & args]
     (let [scope (gensym)
-          scoped-dom (fn [selector event] 
-                       ((:recurrent/dom-$ sources)
-                        (str "." scope " " (if (not= selector :root) selector) " ")
-                        event))
-          component-sinks (Component props (assoc sources
-                                                  :recurrent/dom-$ scoped-dom))]
+          scoped-dom 
+          (if (:recurrent/portal (meta Component))
+            (:recurrent/root-source (meta (:recurrent/dom-$ sources)))
+            (with-meta 
+              (fn [selector event] 
+                ((:recurrent/dom-$ sources)
+                 (str "." scope " " (if (not= selector :root) selector) " ")
+                 event))
+              (meta (:recurrent/dom-$ sources))))
+          component-sinks (apply Component
+                                 (assoc
+                                   sources
+                                   :recurrent/dom-$ scoped-dom) args)]
       (assoc component-sinks
-             :recurrent/dom-$ (ulmus/map (fn [dom]
-                                           (with-meta 
-                                             (if (map? (second dom))
-                                               (update-in dom [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
-                                               (assoc-in dom [1] {:class (str "recurrent-component " scope)}))
-                                             {:hipo/key (str scope)}))
-                                         (:recurrent/dom-$ component-sinks))))))
+             :recurrent/dom-$
+             (ulmus/map (fn [dom]
+                          (let [scoped-dom-sink
+                                (if (:recurrent/portal (meta Component))
+                                  (rum/portal (sablono/html dom)
+                                              (:recurrent/root-element (meta (:recurrent/dom-$ sources))))
+                                  (sablono/html
+                                    (-> dom
+                                        (update-in [1 :class] (fn [class-string] (str "recurrent-component " scope " " class-string)))
+                                        (assoc-in [1 :key] (str scope)))))]
+                            scoped-dom-sink))
+                        (ulmus/distinct (:recurrent/dom-$ component-sinks)))))))
