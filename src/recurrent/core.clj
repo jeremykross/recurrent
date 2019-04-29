@@ -7,14 +7,12 @@
   [& body]
   (let [alt-body (walk/prewalk (fn [form]
                                  (cond
-                                   (and 
+                                   (and
                                      (list? form)
                                      (symbol? (first form))
-                                     (string/index-of (str (first form)) "defcomponent"))
-                                   (if (map? (second form))
-                                     (apply list (assoc (vec form) 3 '[props]))
-                                     (apply list (assoc (vec form) 2 '[props])))
-                                   
+                                     (re-find #"^[A-Z]" (name (first form))))
+                                   `(~'recurrent/new ~(first form) ~@(rest form))
+
                                    (and
                                      (list? form)
                                      (list? (first form))
@@ -24,7 +22,7 @@
                                      `(~'$ ~driver-name ~@args))
                                    :else form))
                                body)]
-    `(do ~@alt-body)))
+    alt-body))
 
 (defmacro defcomponent-1
   [metadata named args & body]
@@ -34,7 +32,9 @@
                                                (and (list? f) (= (first f) 'recurrent/new))
                                                `(~(second f) ~sources-symbol
                                                           ~@(rest (rest f)))
-                                               (and (list? f) (= (first f) '$))
+                                               (and 
+                                                 (list? f)
+                                                 (= (first f) '$))
                                                `((get ~sources-symbol ~(second f)) ~@(rest (rest f)))
                                                :else f))
                                            body)]
