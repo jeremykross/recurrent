@@ -1,5 +1,30 @@
 (ns recurrent.core
-  (:require [clojure.walk :as walk]))
+  (:require
+    [clojure.string :as string]
+    [clojure.walk :as walk]))
+
+(defmacro legacy
+  [& body]
+  (let [alt-body (walk/prewalk (fn [form]
+                                 (cond
+                                   (and 
+                                     (list? form)
+                                     (symbol? (first form))
+                                     (string/index-of (str (first form)) "defcomponent"))
+                                   (if (map? (second form))
+                                     (apply list (assoc (vec form) 3 '[props]))
+                                     (apply list (assoc (vec form) 2 '[props])))
+                                   
+                                   (and
+                                     (list? form)
+                                     (list? (first form))
+                                     (= 'sources (second (first form))))
+                                   (let [driver-name (first (first form))
+                                         args (subvec (vec form) 1)]
+                                     `(~'$ ~driver-name ~@args))
+                                   :else form))
+                               body)]
+    `(do ~@alt-body)))
 
 (defmacro defcomponent-1
   [metadata named args & body]
