@@ -68,6 +68,9 @@
 (defn isolate
   [Component]
   (fn [sources & args]
+    (.log js/console (str "STARTING:" args))
+    (.log js/console (str "comp" Component))
+
     (let [scope (gensym)
           scoped-dom 
           (if (:recurrent/portal (meta Component))
@@ -78,10 +81,14 @@
                  (str "." scope " " (if (not= selector :root) selector) " ")
                  event))
               (meta (:recurrent/dom-$ sources))))
+
+
           component-sinks (apply Component
                                  (assoc
                                    sources
                                    :recurrent/dom-$ scoped-dom) args)]
+
+
       (assoc component-sinks
              :recurrent/dom-$
              (ulmus/map (fn [dom]

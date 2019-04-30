@@ -11,7 +11,7 @@
                                      (list? form)
                                      (symbol? (first form))
                                      (re-find #"^[A-Z]" (name (first form))))
-                                   `(~'recurrent/new ~(first form) ~@(rest form))
+                                   `(instantiate ~(first form) ~@(rest form))
 
                                    (and
                                      (list? form)
@@ -19,22 +19,25 @@
                                      (= 'sources (second (first form))))
                                    (let [driver-name (first (first form))
                                          args (subvec (vec form) 1)]
-                                     `(~'$ ~driver-name ~@args))
+                                     `($ ~driver-name ~@args))
                                    :else form))
                                body)]
-    alt-body))
+    `(do ~@alt-body)))
 
 (defmacro defcomponent-1
   [metadata named args & body]
   (let [sources-symbol (gensym)
         expanded-source-body (walk/prewalk (fn [f]
                                              (cond
-                                               (and (list? f) (= (first f) 'recurrent/new))
+                                               (and (list? f) 
+                                                    (symbol? (first f))
+                                                    (= (name (first f)) "instantiate"))
                                                `(~(second f) ~sources-symbol
                                                           ~@(rest (rest f)))
                                                (and 
                                                  (list? f)
-                                                 (= (first f) '$))
+                                                 (symbol? (first f))
+                                                 (= (name (first f)) "$"))
                                                `((get ~sources-symbol ~(second f)) ~@(rest (rest f)))
                                                :else f))
                                            body)]
