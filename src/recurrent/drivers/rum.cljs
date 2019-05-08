@@ -68,9 +68,6 @@
 (defn isolate
   [Component]
   (fn [props sources]
-    (println "META:" (meta Component))
-    (println "Sourc emeta:" (meta (:recurrent/dom-$ sources)))
-
     (let [scope (gensym)
           scoped-dom 
           (if (:recurrent/portal (meta Component))

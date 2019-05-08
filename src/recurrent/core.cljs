@@ -25,5 +25,4 @@
 (defn close!
   [c]
   (doseq [[k sink-$] c]
-    (println "Closing: " k)
     (ulmus/close! sink-$ :transitive? true)))
