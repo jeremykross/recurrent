@@ -10,7 +10,7 @@
                                              (cond
                                                (and (list? f) 
                                                     (symbol? (first f))
-                                                    (= (name (first f)) "instantiate"))
+                                                    (= (name (first f)) "!"))
                                                `(~(second f) ~sources-symbol
                                                           ~@(rest (rest f)))
                                                (and 

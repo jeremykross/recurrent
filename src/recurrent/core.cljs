@@ -11,7 +11,7 @@
     
 (defn replicate-many!
   [sinks sink-proxies]
-  (into {} (map (fn [[k sink-proxy]] [k (ulmus/splice! sink-proxy (sinks k))]) sink-proxies)))
+  (into {} (map (fn [[k sink-proxy]] [k (if (sinks k) (ulmus/splice! sink-proxy (sinks k)) (ulmus/signal))]) sink-proxies)))
 
 (defn start!
   [main sources & args]
