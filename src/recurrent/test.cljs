@@ -1,35 +1,19 @@
 (ns recurrent.test
   (:require
-    recurrent.drivers.dom
     [recurrent.core :as recurrent :include-macros true]
+    [recurrent.drivers.dom :as dom]
+    [recurrent.drivers.state :as state]
     [ulmus.signal :as ulmus]))
 
-(recurrent/defcomponent
-  Bar
-  []
-  {:recurrent/dom-$ (ulmus/signal-of [:div {} "Howdy partner"])})
-
-(recurrent/defcomponent
-  Main
-  [n]
-  (let [clicks-$ (ulmus/reduce inc 0 ($ :recurrent/dom-$ :root "click"))]
-    {:recurrent/dom-$
-     (ulmus/map
-       (fn [cnt] (println cnt) [:div {} (str "Click Count: " cnt)]) clicks-$)}))
-
-(recurrent/legacy
-  (recurrent/defcomponent
-    LegacyMain
-    [props sources]
-    (let [clicks-$ (ulmus/reduce inc 0 ((:recurrent/dom-$ sources) :root "click"))]
-      {:recurrent/dom-$
-       (ulmus/map
-         (fn [cnt] (println cnt) [:div {} (str "Click Count: " cnt)]) clicks-$)})))
+(defn Main
+  [sources]
+  (ulmus/subscribe! (:recurrent/state-$ sources) #(println "State is" %))
+  {:recurrent/state-$ (ulmus/signal-of (fn [state] (assoc state :hello "World")))})
 
 (defn start!
   []
   (recurrent/start!
-    LegacyMain
-    {:recurrent/dom-$
-     (recurrent.drivers.dom/create! "app")}
-    "Jeremy"))
+    (state/isolate Main [:put :at])
+    {:recurrent/state-$ (state/create-store! {})}))
+
+(set! (.-onerror js/window) #(js/alert %))

@@ -18,12 +18,14 @@
   (let [drivers (into {} (filter (fn [[_ v]] (:recurrent/driver? (meta v))) sources))]
     (let [sink-proxies (make-sink-proxies drivers)
           running-drivers (call-drivers! drivers sink-proxies)
-          sinks (apply main (merge sources running-drivers) args)]
+          all-sources (merge sources running-drivers)
+          sinks (apply main all-sources args)]
       (replicate-many! sinks sink-proxies)
-      sinks)))
+      (with-meta
+        sinks
+        {:recurrent/sources all-sources}))))
 
 (defn close!
   [c]
   (doseq [[k sink-$] c]
-    (println "Closing: " k)
     (ulmus/close! sink-$ :transitive? true)))

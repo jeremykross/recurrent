@@ -68,9 +68,6 @@
 (defn isolate
   [Component]
   (fn [sources & args]
-    (.log js/console (str "STARTING:" args))
-    (.log js/console (str "comp" Component))
-
     (let [scope (gensym)
           scoped-dom 
           (if (:recurrent/portal (meta Component))

@@ -3,27 +3,6 @@
     [clojure.string :as string]
     [clojure.walk :as walk]))
 
-(defmacro legacy
-  [& body]
-  (let [alt-body (walk/prewalk (fn [form]
-                                 (cond
-                                   (and
-                                     (list? form)
-                                     (symbol? (first form))
-                                     (re-find #"^[A-Z]" (name (first form))))
-                                   `(instantiate ~(first form) ~@(rest form))
-
-                                   (and
-                                     (list? form)
-                                     (list? (first form))
-                                     (= 'sources (second (first form))))
-                                   (let [driver-name (first (first form))
-                                         args (subvec (vec form) 1)]
-                                     `($ ~driver-name ~@args))
-                                   :else form))
-                               body)]
-    `(do ~@alt-body)))
-
 (defmacro defcomponent-1
   [metadata named args & body]
   (let [sources-symbol (gensym)
@@ -57,3 +36,5 @@
 (defmacro defcomponent
   [named args & body]
   `(defcomponent-1 {} ~named ~args ~@body))
+
+
