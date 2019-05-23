@@ -31,7 +31,7 @@ But becuase `:recurrent/dom-$` is a signal, it needn't be static.  Here we take 
   {:recurrent/dom-$ (ulmus/map (fn [the-name] [:h1 {} (str "Hello " the-name)]) the-name-$)})
 ```
 
-We map over a signal, the-name-$, which provides the name to be printed.  Any time the-name-$ changes, a new dom object will be emitted and the component will rerender. 
+We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes, a new dom object will be emitted and the component will rerender. 
 
 ## Sources
 
