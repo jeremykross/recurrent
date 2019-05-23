@@ -106,7 +106,7 @@ Here's a more complete example.
          (:value-$ input)))}))
 ```
 
-## Drivers and the main loop
+## Drivers and the Main Loop
 
 So far we've seen how sources allow for the creation of signals within components from external sources (like DOM events).  We've also seen how components can return signals which are used to mutate some external source (i.e., the way the `:recurrent/dom-$` signal changes the actual DOM).  These changes are mediated by drivers.  The aforementioned facilities come from the dom driver included with Recurrent.
 
