@@ -8,7 +8,7 @@ Recurrent is a UI library for the web.  It's highly influenced by the likes of R
 
 ## Components
 
-Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Any signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  
+Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  Many readers will recognize this as the 'functional reactive' style of programming.  The FRP layer in Recurrent is currently handled by (Ulmus)[https://github.com/jeremykross/ulmus].
 
 Components return maps with, at minimum, a signal keyed under `:recurrent/dom-$`.  This signal represents the component's hiccup formatted DOM.
 
@@ -33,7 +33,7 @@ But becuase `:recurrent/dom-$` is a signal, it needn't be static.  Here we take 
   {:recurrent/dom-$ (ulmus/map (fn [the-name] [:h1 {} (str "Hello " the-name)]) the-name-$)})
 ```
 
-We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes, a new dom object will be emitted and the component will rerender. 
+We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes (as in `(ulmus/>! the-name-$ "New Name Here")`), a new dom object will be emitted and the component will rerender. 
 
 ## Sources
 
@@ -86,7 +86,7 @@ Defined is a component `Input` that generates a signal `value-$` from it's `"inp
 (let [input (! Input "FooBar")])
 ```
 
-Now `input` is a map with the `:recurrent/dom-$` and `:value-$` keys defined in the componet.  This is essentially a function invocation.  The first argument to `!` is the component to be instantiated, followed by the arguments the component accepts.  Here, `initial-value` is set to `"FooBar"`.
+Now `input` is a map with the `:recurrent/dom-$` and `:value-$` keys defined in the componet.  This is essentially a function invocation.  The first argument to `!` is the component to be instantiated, followed by the arguments the component accepts.  Above, `initial-value` is set to `"FooBar"`.
 
 Here's a more complete example.
 
@@ -126,6 +126,5 @@ This will instantiate the `Main` component (defined above actually), and render 
 
 Drivers' sources can be accessed at the key at which they are instantiated here, i.e. we now have access to `($ :recurrent/dom-$)` within `Main` and any other components instantiated from `Main`.  The dom driver should always be instantiated at the `:recurrent/dom-$` key, although that limitation maybe removed in the future.
 
-Recurrent ships with three drivers by default, `dom`, `http`, and `state` (documentation forthcoming). 
-
+Recurrent ships with three drivers by default, `dom`, `state`, and `http`.
 
