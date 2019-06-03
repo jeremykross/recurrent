@@ -1,10 +1,22 @@
 # Recurrent
 
-## Introduction
+## Table of Contents
+- [Introduction](#introduction)
+- [Components](#components)
+- [Sources](#sources)
+- [Instantation](#instantiation)
+- [Drivers and the Main Loop](#drivers-and-the-main-loop)
+- [Examples](#examples)
+- [Status](#status)
+- [Roadmap](#roadmap)
+- [License](#license)
+
+
+### Introduction
 
 Recurrent is a UI library for the web.  It's highly influenced by the likes of React and other v-dom based libraries.  Whereas React has one point of reactivity (state -> UI), Recurrent is deeply reactive throughout.
 
-## Components
+### Components
 
 Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  Many readers will recognize this as the functional reactive style of programming (FRP).  The FRP layer in Recurrent is currently handled by [Ulmus](https://github.com/jeremykross/ulmus).
 
@@ -33,7 +45,7 @@ But becuase `:recurrent/dom-$` is a signal, it needn't be static.  Here we take 
 
 We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes a new dom object will be emitted and the component will rerender. 
 
-## Sources
+### Sources
 
 Components are provided with "sources" that allow the user to generate new signals, usually from some external data.  One of the most fundamental sources is used to generate signals from events on the components DOM.  Let's see how this works.  In this example we're going to display a button along with a label indicating how many times the button has been clicked.
 
@@ -55,11 +67,11 @@ Here you can see we create a signal called `count-$`.  `count-$` is a reduction 
 ($ :recurrent/dom-$ "button" "click")
 ```
 
-generats a signal of events that occur when the button in the component is clicked.
+generates a signal of events that occur when the button in the component is clicked.
 
 `$` is a special symbol used within the context of a `defcomponent` to access sources.  The first argument is the name of the source, in this case `:recurrent/dom-$`.  The addititional arguments are provided to the source for generating the signal.  The `:recurrent/dom-$` source takes a CSS selector (`"button"` here), and an event, in this case `"click"`.  Interestingly, we can generate this signal even before the dom is rendered.  Additionally, components can only general signals for events sourced from inside their own DOM.  We'll see where sources come from shortly.
 
-## Instantiation
+### Instantiation
 
 Let's imagine we have a text input component.
 
@@ -110,7 +122,7 @@ Here's a more complete example.
          (:value-$ input)))}))
 ```
 
-## Drivers and the Main Loop
+### Drivers and the Main Loop
 
 So far we've seen how sources allow for the creation of signals within components from external sources (like DOM events).  We've also seen how components can return signals which are used to mutate some external source (i.e., the way the `:recurrent/dom-$` signal changes the actual DOM).  These changes are mediated by drivers.  The aforementioned facilities come from the dom driver included with Recurrent.
 
@@ -122,8 +134,7 @@ To start a recurrent reconciliation loop, and provide drivers to our components,
   (recurrent/start!
     Main
     {:recurrent/dom-$
-     (recurrent.drivers.dom/create! "app")}
-    "Howdy"))
+     (recurrent.drivers.dom/create! "app")}))
 ```
 
 This will instantiate the `Main` component (defined above actually), and render the dom returned on `:recurrent/dom-$` into the div with the id "app". 
@@ -132,17 +143,36 @@ Drivers' sources can be accessed at the key at which they are instantiated here,
 
 Recurrent ships with three drivers by default, `dom`, `state`, and `http`.
 
-## Examples
+### Examples
 
-Recurrent was used to build [Konstellate](https://github.com/containership/konstellate) available at [here](https://containership.github.io/konstellate).
+Recurrent was used to build [Konstellate](https://containership.github.io/konstellate).  More information on Konstellate can be found at [konstellate.io](https://konstellate.io) or it's [repo](https://github.com/containership/konstellate).
 
 A handful of examples can be found in the [recurrent-examples repo](https://github.com/jeremykross/recurrent-examples) and running [here](https://jeremykross.github.io/recurrent-examples).
 
-## Status
+
+### Status
 
 Recurrent is beta quality and shouldn't be relied upon yet for mission critical applications.
 
-## Roadmap
+### Roadmap
 
-* More documentation
+#### Short Term
+
+* Documentation
+  * HTTP Driver
+  * State Driver
+  * More examples
 * Spec
+* Potentially move drivers into seperate repos
+* Add helper funcs/macros for common patterns
+* Performance & bug fixes
+
+#### Longer Term
+* Investigate alternative v-dom implementations
+* Abstract the FRP implementation
+
+## License
+
+Copyright 2018 Jeremy Kross
+
+Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
