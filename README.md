@@ -132,11 +132,17 @@ Drivers' sources can be accessed at the key at which they are instantiated here,
 
 Recurrent ships with three drivers by default, `dom`, `state`, and `http`.
 
+## Examples
+
+Recurrent was used to build [Konstellate](https://github.com/containership/konstellate) available at [here](https://containership.github.io/konstellate).
+
+A handful of examples can be found in the [recurrent-examples repo](https://github.com/jeremykross/recurrent-examples) and running [here](https://jeremykross.github.io/recurrent-examples).
+
+## Status
+
+Recurrent is beta quality and shouldn't be relied upon yet for mission critical applications.
 
 ## Roadmap
 
 * More documentation
-..* State and HTTP drivers
-..* API  
 * Spec
-* Stabilize the API toward a 1.0 release
