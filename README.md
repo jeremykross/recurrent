@@ -1,6 +1,6 @@
 # Recurrent
 
-Recurrent is a for building functional reactive GUIs in Clojurescript.
+Recurrent is a library for building functional reactive GUIs in Clojurescript.
 
 ## Intro
 
@@ -8,7 +8,7 @@ Recurrent is a UI library for the web.  It's highly influenced by the likes of R
 
 ## Components
 
-Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  Many readers will recognize this as the 'functional reactive' style of programming.  The FRP layer in Recurrent is currently handled by (Ulmus)[https://github.com/jeremykross/ulmus].
+Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  Many readers will recognize this as the functional reactive style of programming (FRP).  The FRP layer in Recurrent is currently handled by [Ulmus](https://github.com/jeremykross/ulmus).
 
 Components return maps with, at minimum, a signal keyed under `:recurrent/dom-$`.  This signal represents the component's hiccup formatted DOM.
 
@@ -33,7 +33,7 @@ But becuase `:recurrent/dom-$` is a signal, it needn't be static.  Here we take 
   {:recurrent/dom-$ (ulmus/map (fn [the-name] [:h1 {} (str "Hello " the-name)]) the-name-$)})
 ```
 
-We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes (as in `(ulmus/>! the-name-$ "New Name Here")`), a new dom object will be emitted and the component will rerender. 
+We map over a signal, `the-name-$`, which provides the name to be printed.  Any time `the-name-$` changes a new dom object will be emitted and the component will rerender. 
 
 ## Sources
 
@@ -51,11 +51,17 @@ Components are provided with "sources" that allow the user to generate new signa
             [:p {} (str "You've clicked " count " times.")]]) count-$)}))
 ```
 
-Here you can see we create a signal called `count-$`.  `count-$` is a reduction over `inc` starting at 0.  `($ :recurrent/dom-$ "button" "click")` generats a signal of events that occur when the button in the component is clicked.
+Here you can see we create a signal called `count-$`.  `count-$` is a reduction over `inc` starting at 0.
+
+```clojure
+($ :recurrent/dom-$ "button" "click")
+```
+
+generats a signal of events that occur when the button in the component is clicked.
 
 `$` is a special symbol used within the context of a `defcomponent` to access sources.  The first argument is the name of the source, in this case `:recurrent/dom-$`.  The addititional arguments are provided to the source for generating the signal.  The `:recurrent/dom-$` source takes a CSS selector (`"button"` here), and an event, in this case `"click"`.  Interestingly, we can generate this signal even before the dom is rendered.  Additionally, components can only general signals for events sourced from inside their own DOM.  We'll see where sources come from shortly.
 
-## Instantiation.
+## Instantiation
 
 Let's imagine we have a text input component.
 
@@ -80,7 +86,7 @@ Let's imagine we have a text input component.
        value-$)}))
 ```
 
-Defined is a component `Input` that generates a signal `value-$` from it's `"input"` event looking at the `target.value` of the event object.  We may want to use this component within other components.  There's another special symbol (in addition to `$`) for instantiation.  To create an instance of the input we do something like this
+Here, we've defined a component `Input` that generates a signal `value-$` from it's `oninput` event looking at the `target.value` of the event object.  We may want to use this component within other components.  There's another special symbol (in addition to `$`) for instantiation.  To create an instance of the input we do something like this
 
 ```clojure
 (let [input (! Input "FooBar")])
@@ -128,3 +134,11 @@ Drivers' sources can be accessed at the key at which they are instantiated here,
 
 Recurrent ships with three drivers by default, `dom`, `state`, and `http`.
 
+
+## Roadmap
+
+* More documentation
+..* State and HTTP drivers
+..* API  
+* Spec
+* Stabilize the API toward a 1.0 release
