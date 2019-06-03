@@ -1,8 +1,6 @@
 # Recurrent
 
-Recurrent is a library for building functional reactive GUIs in Clojurescript.
-
-## Intro
+## Introduction
 
 Recurrent is a UI library for the web.  It's highly influenced by the likes of React and other v-dom based libraries.  Whereas React has one point of reactivity (state -> UI), Recurrent is deeply reactive throughout.
 
