@@ -179,6 +179,10 @@ Recurrent is beta quality and shouldn't be relied upon yet for mission critical 
 * Investigate alternative v-dom implementations
 * Abstract the FRP implementation
 
+### Thanks
+
+Recurrent was largely inspired by [Cycle.js](https://cycle.js.org/).
+
 ### License
 
 Copyright 2019 Jeremy Kross
