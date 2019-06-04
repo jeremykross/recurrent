@@ -16,6 +16,14 @@
 
 Recurrent is a UI library for the web.  It's highly influenced by the likes of React and other v-dom based libraries.  Whereas React has one point of reactivity (state -> UI), Recurrent is deeply reactive throughout.
 
+### Usage
+
+`[recurrent "0.2.0"]` in `project.clj`
+
+or
+
+`{:deps {recurrent {:mvn/version "0.2.0"}}}` in `deps.edn`
+
 ### Components
 
 Components in Recurrent are functions of data.  A special data type is defined, called a signal, which represents a value that changes over time.  Signals are composed using the standard functional tooling (`map`, `filter`, `reduce`, et al.).  These functions yield derived signals that will update when their constituent signals change.  Many readers will recognize this as the functional reactive style of programming (FRP).  The FRP layer in Recurrent is currently handled by [Ulmus](https://github.com/jeremykross/ulmus).
@@ -171,8 +179,8 @@ Recurrent is beta quality and shouldn't be relied upon yet for mission critical 
 * Investigate alternative v-dom implementations
 * Abstract the FRP implementation
 
-## License
+### License
 
-Copyright 2018 Jeremy Kross
+Copyright 2019 Jeremy Kross
 
 Distributed under the Eclipse Public License either version 1.0 or (at your option) any later version.
