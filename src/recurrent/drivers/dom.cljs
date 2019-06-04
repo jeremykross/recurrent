@@ -19,7 +19,7 @@
 
 (def blocked-events* (atom {}))
 
-(defn create!
+(defn render-into!
   [parent-or-id]
   (let [parent (if (string? parent-or-id)
                  (.getElementById js/document parent-or-id)
