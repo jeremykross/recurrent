@@ -18,11 +18,11 @@ Recurrent is a UI library for the web.  It's highly influenced by the likes of R
 
 ### Usage
 
-`[recurrent "0.2.0"]` in `project.clj`
+`[recurrent "0.2.1"]` in `project.clj`
 
 or
 
-`{:deps {recurrent {:mvn/version "0.2.0"}}}` in `deps.edn`
+`{:deps {recurrent {:mvn/version "0.2.1"}}}` in `deps.edn`
 
 ### Components
 
