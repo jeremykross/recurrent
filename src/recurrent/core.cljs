@@ -1,15 +1,15 @@
 (ns recurrent.core
   (:require [ulmus.signal :as ulmus]))
 
-(defn make-sink-proxies
+(defn- make-sink-proxies
   [drivers]
   (into {} (map (fn [[k v]] [k (ulmus/signal)]) drivers)))
 
-(defn call-drivers!
+(defn- call-drivers!
   [drivers sink-proxies]
   (into {} (map (fn [[k driver]] [k (driver (sink-proxies k))]) drivers)))
     
-(defn replicate-many!
+(defn- replicate-many!
   [sinks sink-proxies]
   (into {} (map (fn [[k sink-proxy]] [k (if (sinks k) (ulmus/splice! sink-proxy (sinks k)) (ulmus/signal))]) sink-proxies)))
 

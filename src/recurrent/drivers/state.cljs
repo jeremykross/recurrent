@@ -2,7 +2,7 @@
   (:require
     [ulmus.signal :as ulmus]))
 
-(defn apply-reduction
+(defn- apply-reduction
   [state reducer]
   (reducer state))
 
