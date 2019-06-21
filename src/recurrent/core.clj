@@ -3,8 +3,8 @@
     [clojure.string :as string]
     [clojure.walk :as walk]))
 
-(defmacro defcomponent-1
-  [metadata named args & body]
+(defmacro defcomponent
+  [isolate metadata named args & body]
   (let [sources-symbol (gensym)
         expanded-source-body (walk/prewalk (fn [f]
                                              (cond
@@ -28,13 +28,8 @@
            (do
              ~@expanded-source-body)
            {:recurrent/component ~(keyword (str (:name (:ns &env)) "/" named))}))
-      (def ~named (recurrent.drivers.dom/isolate 
+      (def ~named (~isolate
                     (with-meta 
                       ~(symbol (str "_" named))
                       ~metadata))))))
-
-(defmacro defcomponent
-  [named args & body]
-  `(defcomponent-1 {} ~named ~args ~@body))
-
 

@@ -6,7 +6,7 @@
     [sablono.core :as sablono :include-macros true]
     [ulmus.signal :as ulmus]))
 
-(def recurrent-mixin
+(def ^:private recurrent-mixin
   {:did-mount (fn [state]
                 (let [component (:rum/react-component state)
                       dom-$ (first (:rum/args state))]
@@ -17,7 +17,7 @@
 (rum/defc render [dom] dom)
 (rum/defc embed < recurrent-mixin [dom-$] @dom-$)
 
-(def blocked-events* (atom {}))
+(def ^:private blocked-events* (atom {}))
 
 (defn render-into!
   [parent-or-id]
