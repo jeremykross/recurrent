@@ -18,11 +18,15 @@ Recurrent is a UI library for the web.  It's influenced by the likes of React an
 
 ### Usage
 
-`[recurrent "0.2.1"]` in `project.clj`
+```clojure
+[recurrent "0.2.1"]
+```
 
 or
 
-`{:deps {recurrent {:mvn/version "0.2.1"}}}` in `deps.edn`
+```clojure
+{recurrent {:mvn/version "0.2.1"}}
+```
 
 ### Components
 
