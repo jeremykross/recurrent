@@ -1,4 +1,6 @@
-# Recurrent
+<img src="https://github.com/jeremykross/recurrent/blob/master/resources/recurrent.svg" width="600px" />
+
+---
 
 ## Table of Contents
 - [Introduction](#introduction)
@@ -14,7 +16,7 @@
 
 ### Introduction
 
-Recurrent is a UI library for the web.  It's influenced by the likes of React and other v-dom based libraries.  Whereas React has one point of reactivity (state -> UI), Recurrent is deeply reactive throughout.
+Recurrent is a UI library for the web built around the functional-reactive style of programming.  It's influenced by the likes of React and other v-dom based libraries.  Whereas React has one point of reactivity (state -> UI), Recurrent is deeply reactive throughout.
 
 ### Usage
 
@@ -77,7 +79,7 @@ Components are provided with "sources" that allow the user to generate new signa
             [:p {} (str "You've clicked " count " times.")]]) count-$)}))
 ```
 
-Here you can see we create a signal called `count-$`.  `count-$` is a reduction against `inc` starting at 0.
+Here, we create a signal called `count-$`.  `count-$` is a reduction against `inc` starting at 0.
 
 ```clojure
 ($ :recurrent/dom-$ "button" "click")
@@ -112,7 +114,9 @@ Let's imagine we have a text input component.
      (ulmus/map
        (fn [v] 
          [:div {}
-          [:input {:class "my-input" :type "text" :defaultValue initial-value}]])
+          [:input {:class "my-input"
+	           :type "text"
+		   :value v}]])
        value-$)}))
 ```
 
@@ -154,7 +158,7 @@ To start a recurrent reconciliation loop, and provide drivers to our components,
   (recurrent/start!
     Main
     {:recurrent/dom-$
-     (recurrent.drivers.dom/create! "app")}))
+     (recurrent.drivers.dom/render-into! "app")}))
 ```
 
 This will instantiate the `Main` component.  The dom emitted on the signal at `:recurrent/dom-$` will be rendered into the div with id of "app".
@@ -211,6 +215,8 @@ Recurrent is beta quality and shouldn't be relied upon yet for mission critical 
 * Add helper funcs/macros for common patterns
 
 ### Thanks
+
+The Recurrent logo was created by the eminently talented [@the_stritt](https://twitter.com/the_stritt).
 
 Recurrent was largely inspired by [Cycle.js](https://cycle.js.org/).
 
