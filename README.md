@@ -163,11 +163,29 @@ Drivers' sources can be accessed at the key at which they are instantiated.  i.e
 
 Recurrent ships with three drivers by default, `dom`, `state`, and `http`.
 
+### State Managment
+
+The state driver facilitates signal-driven reducer based state management.  When the state driver is instanated at a particular key and passed to `start!`, the current state will be provided as a signal at that key to the component.
+
+ ```clojure
+(defn main!
+  []
+  (recurrent/start!
+    Main
+    {:recurrent/state-$
+     (recurrent.drivers.state/create-store! {:some "state"})}))
+```
+
+The `Main` component can now access a signal of the current state with `($ :recurrent/state-$)`.
+
+`Main` can also return a signal at `:recurrent/state-$` of reducing functions. i.e. functions that accept a signal argument, the current state, and return the newly desired state.  The driver will run these reductions as they're generated on the signal and update the source.
+
+See [recurrent-todo](https://github.com/jeremykross/recurrent-examples/blob/master/src/recurrent_examples/examples/todo.cljs) for a complete example.
 ### Examples
 
 Recurrent was used to build [Konstellate](https://containership.github.io/konstellate).  More information on Konstellate can be found at [konstellate.io](https://konstellate.io) or it's [repo](https://github.com/containership/konstellate).
 
-A handful of examples can be found in the [recurrent-examples repo](https://github.com/jeremykross/recurrent-examples) and running [here](https://jeremykross.github.io/recurrent-examples).
+A handful of examples can be found in the [recurrent-examples repo](https://github.com/jeremykross/recurrent-examples) and running [here](https://jeremykross.github.io/recurrent-examples).  
 
 
 ### Status
@@ -181,7 +199,6 @@ Recurrent is beta quality and shouldn't be relied upon yet for mission critical 
 * Documentation
   * Docstring and API
   * HTTP Driver
-  * State Driver
   * Creating new drivers
   * More examples
 * Spec
