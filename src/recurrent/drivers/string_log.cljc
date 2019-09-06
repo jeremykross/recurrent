@@ -10,6 +10,6 @@
         sink-$
         (fn [v]
           (swap! log str v "\n")
-          (ulmus/>! source-$ log)))
+          (ulmus/>! source-$ @log)))
       source-$)))
 
